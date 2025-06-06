@@ -1,3 +1,4 @@
+
 #include <TinyGPS++.h>
 #include <HardwareSerial.h>
 #include <SPI.h>
@@ -15,13 +16,15 @@
 #define GPS_BAUD 9600
 
 #define BUTTON_PIN 16
-#define LED_BUTTON 33     // LED toggled by button
-#define LED_RECEIVE 23    // LED toggled by received warn
-#define SEND_FREQ 868E6
-#define RECEIVE_FREQ 866E6
+#define FREQ 868E6
 #define LISTEN_TIME 3000
 #define BUTTON_COOLDOWN 1000
 #define CAR_ID 1
+
+#define RED_LED 33  // GPIO red led toggled
+#define BLUE_LED 23  // GPIO red led toggled
+
+
 
 TinyGPSPlus gps;
 HardwareSerial gpsSerial(1);
@@ -30,52 +33,49 @@ bool lastButtonReading = HIGH;
 unsigned long lastToggleTime = 0;
 
 void setup() {
+    pinMode(RED_LED, OUTPUT); // Set pin as output
+    pinMode(BLUE_LED, OUTPUT); // Set pin as output
+
   Serial.begin(115200);
   gpsSerial.begin(GPS_BAUD, SERIAL_8N1, GPS_RX, GPS_TX);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
-  pinMode(LED_BUTTON, OUTPUT);
-  pinMode(LED_RECEIVE, OUTPUT);
 
   SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
   LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
-  if (!LoRa.begin(SEND_FREQ)) {
-    Serial.println("LoRa send init failed!");
+  if (!LoRa.begin(FREQ)) {
+    Serial.println("LoRa init failed!");
     while (true);
   }
   Serial.println("GPS Sender Ready with Listen Mode");
 }
 
 void loop() {
-  // Read GPS
   while (gpsSerial.available()) {
     gps.encode(gpsSerial.read());
   }
 
-  float lat = gps.location.lat() * 1e6;
-  float lng = gps.location.lng() * 1e6;
+  float lat = gps.location.lat();
+  float lng = gps.location.lng();
 
   // Create JSON packet
   String json = "{";
-  json += "\"id\":" + String(CAR_ID) + ",";
-  json += "\"lat\":" + String((int32_t)lat) + ",";
-  json += "\"long\":" + String((int32_t)lng) + ",";
-  json += "\"warn\":" + String(buttonState ? "true" : "false");
+  json += "\"i\":" + String(CAR_ID) + ",";
+  json += "\"la\":" + String(lat) + ",";
+  json += "\"lo\":" + String(lng) + ",";
+  json += "\"w\":" + String(buttonState? "1" : "0");
   json += "}";
+        digitalWrite(RED_LED,buttonState);
 
-  // Send on SEND_FREQ
-  LoRa.end();
-  LoRa.begin(SEND_FREQ);
+
   LoRa.beginPacket();
   LoRa.print(json);
   LoRa.endPacket();
 
-  Serial.print("Sent: ");
-  Serial.println(json);
-  digitalWrite(LED_BUTTON, buttonState);
+  Serial.print("Sent: "); Serial.println(json);
 
-  // Listen on RECEIVE_FREQ
-  LoRa.end();
-  LoRa.begin(RECEIVE_FREQ);
+ 
+    
+  
   unsigned long listenStart = millis();
   while (millis() - listenStart < LISTEN_TIME) {
     bool reading = digitalRead(BUTTON_PIN);
@@ -91,15 +91,13 @@ void loop() {
     int packetSize = LoRa.parsePacket();
     if (packetSize) {
       String received = LoRa.readString();
-      Serial.print("Received: ");
+      Serial.print("Received (from blue): ");
       Serial.println(received);
-      if (received == "1") {
-        digitalWrite(LED_RECEIVE, HIGH);
-      } else {
-        digitalWrite(LED_RECEIVE, LOW);
-      }
+      int value = received.toInt(); // Converts "1" to 1, "0" to 0
+digitalWrite(BLUE_LED, value);
     }
   }
 
   Serial.println("Done listening\n");
 }
+
