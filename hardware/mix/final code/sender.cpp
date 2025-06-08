@@ -43,10 +43,8 @@ void setup() {
   SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
   LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
   if (!LoRa.begin(FREQ)) {
-    Serial.println("LoRa init failed!");
     while (true);
   }
-  Serial.println("GPS Sender Ready with Listen Mode");
 }
 
 void loop() {
@@ -71,7 +69,6 @@ void loop() {
   LoRa.print(json);
   LoRa.endPacket();
 
-  Serial.print("Sent: "); Serial.println(json);
 
  
     
@@ -83,21 +80,17 @@ void loop() {
     if (lastButtonReading == HIGH && reading == LOW && (now - lastToggleTime > BUTTON_COOLDOWN)) {
       buttonState = !buttonState;
       lastToggleTime = now;
-      Serial.print("Red button toggled: ");
-      Serial.println(buttonState ? "1" : "0");
     }
     lastButtonReading = reading;
 
     int packetSize = LoRa.parsePacket();
     if (packetSize) {
       String received = LoRa.readString();
-      Serial.print("Received (from blue): ");
       Serial.println(received);
       int value = received.toInt(); // Converts "1" to 1, "0" to 0
 digitalWrite(BLUE_LED, value);
     }
   }
 
-  Serial.println("Done listening\n");
 }
 

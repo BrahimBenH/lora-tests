@@ -13,7 +13,7 @@
 #define FREQ 868E6
 #define LISTEN_TIME 3000
 
-#define BLUE_LED 23  // GPIO red led toggled
+#define BLUE_LED 13  // GPIO red led toggled
 
 unsigned long lastToggleTime = 0;      // Timestamp of last button toggle
 #define BUTTON_COOLDOWN 1000           // Cooldown time in milliseconds (1 second)
@@ -31,11 +31,9 @@ void setup() {
   SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
   LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
   if (!LoRa.begin(FREQ)) {
-    Serial.println("LoRa init failed");
     while (1);
   }
 
-  Serial.println("LoRa Button Sender + GPS Listener Ready");
 }
 
 void loop() {
@@ -50,14 +48,13 @@ void loop() {
     if (lastButtonReading == HIGH && reading == LOW && (now - lastToggleTime > BUTTON_COOLDOWN)) {
       buttonState = !buttonState;
       lastToggleTime = now;
-      Serial.print("Blue button toggled: ");
-      Serial.println(buttonState ? "1" : "0");
+     
     }
     lastButtonReading = reading;
     int packetSize = LoRa.parsePacket();
     if (packetSize) {
       String received = LoRa.readString();
-      Serial.print("Received (from red): ");
+   
       Serial.println(received);
     }
   }
@@ -67,7 +64,6 @@ void loop() {
   LoRa.print(packet);
   LoRa.endPacket();
 
-  Serial.print("blue sent: "); Serial.println(packet);
         digitalWrite(BLUE_LED,buttonState);
 
 

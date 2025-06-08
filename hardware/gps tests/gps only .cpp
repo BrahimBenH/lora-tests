@@ -6,7 +6,7 @@ HardwareSerial gpsSerial(1);  // Use Serial1
 
 void setup() {
   Serial.begin(115200);
-  gpsSerial.begin(9600, SERIAL_8N1, 15, 4); // RX = 15, TX = 4
+  gpsSerial.begin(9600, SERIAL_8N1, 4, 15); // RX = 15, TX = 4
   Serial.println("GPS test started");
 }
 
