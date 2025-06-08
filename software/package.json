@@ -1,0 +1,17 @@
+{
+  "name": "lora-tests-software",
+  "version": "1.0.0",
+  "description": "LoRa serial port test server",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@serialport/parser-readline": "^13.0.0",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "serialport": "^13.0.0"
+  }
+}

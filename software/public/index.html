@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LoRa GPS Live Map</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map { height: 100vh; width: 100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([36.8, 10.2], 13); // default view
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    const marker = L.marker([0, 0]).addTo(map);
+    let firstUpdate = true;
+
+    async function updateMap() {
+      try {
+        const res = await fetch('/data');
+        const data = await res.json();
+
+        const lat = parseFloat(data.la);
+        const lng = parseFloat(data.lo);
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        marker.setLatLng([lat, lng]);
+        marker.bindPopup(`Car ID: ${data.i}<br>Button: ${data.w}`).openPopup();
+
+        if (firstUpdate) {
+          map.setView([lat, lng], 16);
+          firstUpdate = false;
+        }
+
+      } catch (err) {
+        console.error('Map update error:', err);
+      }
+    }
+
+    setInterval(updateMap, 1000);
+    updateMap();
+  </script>
+</body>
+</html>
