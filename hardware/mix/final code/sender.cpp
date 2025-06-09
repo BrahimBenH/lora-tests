@@ -18,7 +18,7 @@
 #define BUTTON_PIN 16
 #define FREQ 868E6
 #define BUTTON_COOLDOWN 1000
-#define CAR_ID 3
+#define CAR_ID 1
 
 #define RED_LED 12  // GPIO red led toggled
 #define BLUE_LED 13  // GPIO red led toggled
@@ -87,8 +87,13 @@ void loop() {
       String received = LoRa.readString();
       Serial.println(received);
       int value = received.toInt(); // Converts "1" to 1, "0" to 0
-digitalWrite(BLUE_LED, value);
+      if (value==1){
+digitalWrite(BLUE_LED, 1);
     }
+    else if (value==2){
+      digitalWrite(BLUE_LED, 0);
+
+    }}
   }
 
 }
