@@ -17,15 +17,14 @@
 
 #define BUTTON_PIN 16
 #define FREQ 868E6
-#define LISTEN_TIME 3000
 #define BUTTON_COOLDOWN 1000
-#define CAR_ID 1
+#define CAR_ID 3
 
-#define RED_LED 33  // GPIO red led toggled
-#define BLUE_LED 23  // GPIO red led toggled
+#define RED_LED 12  // GPIO red led toggled
+#define BLUE_LED 13  // GPIO red led toggled
 
 
-
+long LISTEN_TIME = random(3000, 5001);  // 5001 is exclusive, so this gives 3000–5000
 TinyGPSPlus gps;
 HardwareSerial gpsSerial(1);
 bool buttonState = false;
